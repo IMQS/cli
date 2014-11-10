@@ -1,5 +1,5 @@
 /*
-Package cli is used to build the front-end of command-line applications
+Package cli is used to build the front-end of command-line applications.
 
 Commands have zero or more mandatory arguments, and zero or more optional parameters.
 An example of a command invocation is:
@@ -10,7 +10,7 @@ Optional parameters can be boolean values, which are specified with a single hyp
 
 	-z             This is a boolean option
 
-Options parameters that can take on a value must be specified like this:
+Optional parameters that can take on a value must be specified like this:
 
 	-config=file   This is a value option
 
