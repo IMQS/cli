@@ -58,6 +58,14 @@ type Option struct {
 	Description string
 }
 
+type OptionSet map[string]string
+
+// Determine whether the option set contains the given option. Useful for bool options.
+func (s OptionSet) Has(name string) bool {
+	_, has := s[name]
+	return has
+}
+
 func findOption(options []Option, name string) *Option {
 	for i := range options {
 		if options[i].Key == name {
@@ -69,7 +77,7 @@ func findOption(options []Option, name string) *Option {
 
 // Command execution callback.
 // It is often easiest to implement a number of commands as a single big function with a switch statement on 'cmd'.
-type ExecFunc func(cmd string, args []string, options map[string]string)
+type ExecFunc func(cmd string, args []string, options OptionSet)
 
 // A top-level command
 type Command struct {
@@ -142,7 +150,7 @@ func (app *App) AddValueOption(name, value, description string) {
 
 // Execute a command list.
 func (app *App) Run() {
-	options := map[string]string{}
+	options := OptionSet{}
 	cmdName := ""
 	cmdArgs := []string{}
 	for iarg, arg := range os.Args {
