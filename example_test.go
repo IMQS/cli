@@ -4,15 +4,19 @@ package cli_test
 import (
 	"fmt"
 	"github.com/IMQS/cli"
+	"os"
 )
 
-func exec(name string, args []string, options cli.OptionSet) {
+func exec(name string, args []string, options cli.OptionSet) int {
 	switch name {
 	case "start":
 		fmt.Printf("starting in %v on port %v.\n", args[0], args[1])
 	case "initialize":
 		fmt.Printf("initializing %v with %v strength. clean=%v\n", args[0], options["strength"], options.Has("clean"))
+	default:
+		return 1
 	}
+	return 0
 }
 
 func Example_application() {
@@ -30,5 +34,5 @@ func Example_application() {
 	// This command takes one mandatory argument, followed by zero or more variable arguments
 	app.AddCommand("varargs", "Demonstrate variable number of arguments", "param1", "...things")
 
-	app.Run()
+	os.Exit(app.Run())
 }

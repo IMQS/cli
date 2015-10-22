@@ -77,7 +77,8 @@ func findOption(options []Option, name string) *Option {
 
 // Command execution callback.
 // It is often easiest to implement a number of commands as a single big function with a switch statement on 'cmd'.
-type ExecFunc func(cmd string, args []string, options OptionSet)
+// The function must return the program exit code (0 = success)
+type ExecFunc func(cmd string, args []string, options OptionSet) int
 
 // A top-level command
 type Command struct {
@@ -149,7 +150,8 @@ func (app *App) AddValueOption(name, value, description string) {
 }
 
 // Execute a command list.
-func (app *App) Run() {
+// Returns the result of Exec(), or 1 for an error
+func (app *App) Run() int {
 	options := OptionSet{}
 	cmdName := ""
 	cmdArgs := []string{}
@@ -182,7 +184,7 @@ func (app *App) Run() {
 		} else {
 			app.ShowHelp(cmdName)
 		}
-		return
+		return 1
 	}
 
 	cmd := app.find(cmdName)
@@ -192,23 +194,23 @@ func (app *App) Run() {
 		if isVArgs {
 			if len(cmdArgs) < len(cmd.Args)-1 {
 				fmt.Printf("%v arguments given, but %v needs '%v'\n", len(cmdArgs), cmdName, formatCmdArgs(cmd.Args))
-				return
+				return 1
 			}
 		} else if len(cmdArgs) != len(cmd.Args) {
 			fmt.Printf("%v arguments given, but %v needs '%v'\n", len(cmdArgs), cmdName, formatCmdArgs(cmd.Args))
-			return
+			return 1
 		}
 		for key, value := range options {
 			opt := findOption(allOptions, key)
 			if opt == nil {
 				fmt.Printf("Unrecognized option %v\n", key)
-				return
+				return 1
 			} else if (opt.Value == "") && (value != "") {
 				fmt.Printf("Option %v does not take a value. Simply use -%v\n", opt.Key, opt.Key)
-				return
+				return 1
 			} else if (opt.Value != "") && (value == "") {
 				fmt.Printf("Option %v needs a value. Use -%v=%v\n", opt.Key, opt.Key, opt.Value)
-				return
+				return 1
 			}
 		}
 		exec := cmd.Exec
@@ -217,11 +219,12 @@ func (app *App) Run() {
 		}
 		if exec == nil {
 			fmt.Printf("No exec function specified for command '%v'\n", cmdName)
-			return
+			return 1
 		}
-		exec(cmdName, cmdArgs, options)
+		return exec(cmdName, cmdArgs, options)
 	} else {
 		fmt.Printf("Unrecognized command '%v'\n", cmdName)
+		return 1
 	}
 }
 
