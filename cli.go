@@ -51,16 +51,17 @@ import (
 	"strings"
 )
 
-// An option to a command
+// An Option to a command
 type Option struct {
 	Key         string // Must be present. Option is entered as -Key, or -Key=Value
 	Value       string // If empty, then this is a boolean option, specified as -Key. If not empty, then this is a key/value option, specified as -Key=Value
 	Description string
 }
 
+// An OptionSet contains a set of Options
 type OptionSet map[string]string
 
-// Determine whether the option set contains the given option. Useful for bool options.
+// Has checks if the option set contains the given option. Useful for bool operations
 func (s OptionSet) Has(name string) bool {
 	_, has := s[name]
 	return has
@@ -75,12 +76,12 @@ func findOption(options []Option, name string) *Option {
 	return nil
 }
 
-// Command execution callback.
+// ExecFunc is the callback when executing commands
 // It is often easiest to implement a number of commands as a single big function with a switch statement on 'cmd'.
 // The function must return the program exit code (0 = success)
 type ExecFunc func(cmd string, args []string, options OptionSet) int
 
-// A top-level command
+// Command represents the top-level command
 type Command struct {
 	Name        string
 	Description string
@@ -93,17 +94,17 @@ func isVarArgs(args []string) bool {
 	return len(args) != 0 && strings.Index(args[len(args)-1], "...") == 0
 }
 
-// The contents of Description, before the first \n
+// ShortDescription returns the app description before the first newline character
 func (c *Command) ShortDescription() string {
 	return strings.Split(c.Description, "\n")[0]
 }
 
-// The contents of Description, after the first \n
+// ExtraDescription returns the app description after the first newline character
 func (c *Command) ExtraDescription() string {
 	return strings.Join(strings.Split(c.Description, "\n")[1:], "\n")
 }
 
-// Add a command-specific bool option (such as -z)
+// AddBoolOption allows a command-specific bool to be added (such as -z)
 func (c *Command) AddBoolOption(name, description string) {
 	opt := Option{
 		Key:         name,
@@ -112,7 +113,7 @@ func (c *Command) AddBoolOption(name, description string) {
 	c.Options = append(c.Options, opt)
 }
 
-// Add a command-specific value option (such as -c=config_file)
+// AddValueOption allows a command-specific value option to be added (such as -c=config_file)
 func (c *Command) AddValueOption(name, value, description string) {
 	opt := Option{
 		Key:         name,
@@ -122,7 +123,7 @@ func (c *Command) AddValueOption(name, value, description string) {
 	c.Options = append(c.Options, opt)
 }
 
-// Application
+// App is the cli application to be run
 type App struct {
 	Description string     // Single-line description
 	DefaultExec ExecFunc   // Exec callback that is used if command's Exec is nil
@@ -130,7 +131,7 @@ type App struct {
 	Options     []Option   // Global options
 }
 
-// Add an application-wide bool option (such as -z)
+// AddBoolOption allows an application-wide bool option to be added (such as -z)
 func (app *App) AddBoolOption(name, description string) {
 	opt := Option{
 		Key:         name,
@@ -139,7 +140,7 @@ func (app *App) AddBoolOption(name, description string) {
 	app.Options = append(app.Options, opt)
 }
 
-// Add an application-wide value option (such as -c=config_file)
+// AddValueOption allows an application-wide value option to be added (such as -c=config_file)
 func (app *App) AddValueOption(name, value, description string) {
 	opt := Option{
 		Key:         name,
@@ -149,7 +150,7 @@ func (app *App) AddValueOption(name, value, description string) {
 	app.Options = append(app.Options, opt)
 }
 
-// Execute a command list.
+// Run the command list of the app.
 // Returns the result of Exec(), or 1 for an error
 func (app *App) Run() int {
 	options := OptionSet{}
@@ -186,7 +187,6 @@ func (app *App) Run() int {
 		}
 		return 1
 	}
-
 	cmd := app.find(cmdName)
 	if cmd != nil {
 		allOptions := append(app.Options, cmd.Options...)
@@ -228,6 +228,7 @@ func (app *App) Run() int {
 	}
 }
 
+// AddCommand allows a command to be registered for use with the application
 func (app *App) AddCommand(name, description string, args ...string) *Command {
 	cmd := &Command{
 		Name:        name,
@@ -287,7 +288,7 @@ func formatCmdArgs(args []string) string {
 	}
 }
 
-// This is called automatically by Run().
+// ShowHelp is called automatically by Run().
 func (app *App) ShowHelp(cmdName string) {
 
 	findLongestOption := func(options []Option) int {
