@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/imqs/cli"
+	"github.com/IMQS/cli"
 )
 
 func exec(name string, args []string, options cli.OptionSet) int {

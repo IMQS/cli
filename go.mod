@@ -1,3 +1,3 @@
-module github.com/imqs/cli
+module github.com/IMQS/cli
 
 go 1.18
